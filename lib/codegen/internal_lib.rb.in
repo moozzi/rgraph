@@ -1,0 +1,28 @@
+# frozen_string_literal: true
+
+require "ffi"
+
+require_relative "types"
+
+module LibC
+  extend FFI::Library
+
+  def self.load_libc
+    case RbConfig::CONFIG["host_os"]
+    when /mswin|mingw|cygwin/
+      ffi_lib "msvcrt.dll"
+    when /darwin/
+      ffi_lib "libc.dylib"
+    when /linux/
+      ffi_lib "libc.so.6"
+    else
+      raise "Cannot import C standard library on this platform"
+    end
+  end
+
+  load_libc
+
+  attach_function :fclose, [:pointer], :int
+  attach_function :fflush, [:pointer], :int
+  attach_function :fdopen, [:int, :string], :pointer
+end
